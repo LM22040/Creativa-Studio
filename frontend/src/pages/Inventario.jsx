@@ -8,17 +8,18 @@ import Badge from '../components/Badge';
 import EmptyState from '../components/EmptyState';
 import ConfirmModal from '../components/ConfirmModal';
 import { useToast } from '../components/Toast';
+import { Plus, Edit2, Trash2, Package, AlertTriangle, CheckCircle, Grid3x3, List, Filter, X } from 'lucide-react';
 
 export default function Inventario() {
   const toast = useToast();
   const [productos, setProductos] = useState([]);
-  const [cargando, setCargando]   = useState(true);
-  const [error, setError]         = useState('');
+  const [cargando, setCargando] = useState(true);
+  const [error, setError] = useState('');
   const [mostrarForm, setMostrarForm] = useState(false);
   const [productoEditar, setProductoEditar] = useState(null);
   const [busqueda, setBusqueda] = useState('');
-  const [vistaActual, setVistaActual] = useState('tabla'); // 'tabla' o 'tarjetas'
-  const [filtroEstado, setFiltroEstado] = useState('todos'); // 'todos', 'ok', 'bajo', 'agotado'
+  const [vistaActual, setVistaActual] = useState('tarjetas');
+  const [filtroEstado, setFiltroEstado] = useState('todos');
   const [productoEliminar, setProductoEliminar] = useState(null);
 
   useEffect(() => {
@@ -66,12 +67,12 @@ export default function Inventario() {
 
   const stockBadge = (producto) => {
     if (producto.stockactual === 0) {
-      return <Badge variant="danger" icon="✕">Sin stock</Badge>;
+      return <Badge variant="danger" icon={X}>Sin stock</Badge>;
     }
     if (producto.stockactual <= producto.stockminimo) {
-      return <Badge variant="warning" icon="⚠">Stock bajo</Badge>;
+      return <Badge variant="warning" icon={AlertTriangle}>Stock bajo</Badge>;
     }
-    return <Badge variant="success" icon="✓">OK</Badge>;
+    return <Badge variant="success" icon={CheckCircle}>OK</Badge>;
   };
 
   const getEstadoProducto = (producto) => {
@@ -80,8 +81,23 @@ export default function Inventario() {
     return 'ok';
   };
 
-  if (cargando) return <p className="text-gray-500 p-6">Cargando inventario...</p>;
-  if (error)    return <p className="text-red-500 p-6">{error}</p>;
+  if (cargando) {
+    return (
+      <div className="p-8 max-w-7xl mx-auto">
+        <div className="space-y-6">
+          <div className="skeleton h-12 w-1/3 rounded-xl" />
+          <div className="skeleton h-12 w-full rounded-xl" />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {[1, 2, 3, 4, 5, 6].map(i => (
+              <div key={i} className="skeleton h-64 rounded-2xl" />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) return <p className="text-red-500 p-8">{error}</p>;
 
   const alertas = productos.filter(p => p.stockactual <= p.stockminimo);
   
@@ -90,28 +106,28 @@ export default function Inventario() {
     (p.tipo && p.tipo.toLowerCase().includes(busqueda.toLowerCase()))
   );
 
-  // Filtrar por estado
   if (filtroEstado !== 'todos') {
     productosFiltrados = productosFiltrados.filter(p => getEstadoProducto(p) === filtroEstado);
   }
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
+    <div className="p-8 max-w-7xl mx-auto space-y-6 animate-fade-in">
+      {/* Header */}
+      <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gray-800">Inventario</h2>
-          <p className="text-gray-500 text-sm">Control de stock de productos disponibles</p>
+          <h2 className="text-3xl font-bold text-gray-900 mb-2">Inventario</h2>
+          <p className="text-gray-500 flex items-center gap-2">
+            <Package className="w-4 h-4" />
+            Control de stock de productos disponibles
+          </p>
         </div>
-        <Button
-          onClick={() => abrirFormulario()}
-          icon="➕"
-        >
+        <Button onClick={() => abrirFormulario()} icon={Plus} size="lg">
           Agregar producto
         </Button>
       </div>
 
       {/* Barra de búsqueda y filtros */}
-      <div className="mb-4 flex flex-col sm:flex-row gap-3">
+      <div className="flex flex-col lg:flex-row gap-4">
         <SearchBar
           value={busqueda}
           onChange={setBusqueda}
@@ -119,19 +135,18 @@ export default function Inventario() {
           className="flex-1"
         />
         
-        {/* Filtros de estado */}
-        <div className="flex gap-2 flex-wrap">
+        <div className="flex gap-3 flex-wrap">
           {[
-            { value: 'todos', label: 'Todos', icon: '📦' },
-            { value: 'ok', label: 'Stock OK', icon: '✓' },
-            { value: 'bajo', label: 'Stock bajo', icon: '⚠' },
-            { value: 'agotado', label: 'Agotado', icon: '✕' },
+            { value: 'todos', label: 'Todos', icon: Package },
+            { value: 'ok', label: 'Stock OK', icon: CheckCircle },
+            { value: 'bajo', label: 'Stock bajo', icon: AlertTriangle },
+            { value: 'agotado', label: 'Agotado', icon: X },
           ].map(filtro => (
             <Button
               key={filtro.value}
               onClick={() => setFiltroEstado(filtro.value)}
               variant={filtroEstado === filtro.value ? 'primary' : 'secondary'}
-              size="sm"
+              size="md"
               icon={filtro.icon}
             >
               {filtro.label}
@@ -139,44 +154,56 @@ export default function Inventario() {
           ))}
         </div>
 
-        {/* Toggle vista */}
-        <div className="flex gap-1 bg-gray-100 rounded-lg p-1">
-          <button
-            onClick={() => setVistaActual('tabla')}
-            className={`px-3 py-1.5 rounded text-sm font-medium transition ${
-              vistaActual === 'tabla'
-                ? 'bg-white text-gray-800 shadow-sm'
-                : 'text-gray-600 hover:text-gray-800'
-            }`}
-            aria-label="Vista de tabla"
-          >
-            📋
-          </button>
+        <div className="flex gap-2 bg-gray-100 rounded-xl p-1.5">
           <button
             onClick={() => setVistaActual('tarjetas')}
-            className={`px-3 py-1.5 rounded text-sm font-medium transition ${
+            className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
               vistaActual === 'tarjetas'
-                ? 'bg-white text-gray-800 shadow-sm'
-                : 'text-gray-600 hover:text-gray-800'
+                ? 'bg-white text-gray-900 shadow-soft'
+                : 'text-gray-600 hover:text-gray-900'
             }`}
-            aria-label="Vista de tarjetas"
           >
-            🎴
+            <Grid3x3 className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => setVistaActual('tabla')}
+            className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+              vistaActual === 'tabla'
+                ? 'bg-white text-gray-900 shadow-soft'
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            <List className="w-4 h-4" />
           </button>
         </div>
       </div>
 
       {/* Alerta de stock bajo */}
       {alertas.length > 0 && (
-        <div className="bg-yellow-50 border border-yellow-300 rounded-xl p-4 mb-6">
-          <p className="text-yellow-800 font-semibold text-sm mb-1">
-            ⚠️ {alertas.length} producto(s) con stock bajo o agotado
-          </p>
-          <ul className="text-yellow-700 text-sm list-disc list-inside">
-            {alertas.map(p => (
-              <li key={p.idproducto}>{p.nombre} — stock actual: {p.stockactual}</li>
-            ))}
-          </ul>
+        <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border-2 border-yellow-200 rounded-2xl p-6 animate-slide-down">
+          <div className="flex items-start gap-4">
+            <div className="w-12 h-12 bg-yellow-100 rounded-2xl flex items-center justify-center shrink-0">
+              <AlertTriangle className="w-6 h-6 text-yellow-600" />
+            </div>
+            <div className="flex-1">
+              <p className="text-yellow-900 font-bold text-lg mb-2">
+                {alertas.length} producto(s) con stock bajo o agotado
+              </p>
+              <ul className="text-yellow-800 text-sm space-y-1">
+                {alertas.slice(0, 3).map(p => (
+                  <li key={p.idproducto} className="flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 bg-yellow-600 rounded-full" />
+                    {p.nombre} — stock actual: {p.stockactual}
+                  </li>
+                ))}
+                {alertas.length > 3 && (
+                  <li className="text-yellow-700 font-medium">
+                    + {alertas.length - 3} más...
+                  </li>
+                )}
+              </ul>
+            </div>
+          </div>
         </div>
       )}
 
@@ -200,13 +227,13 @@ export default function Inventario() {
         confirmText="Eliminar"
         cancelText="Cancelar"
         variant="danger"
-        icon="🗑️"
+        icon={Trash2}
       />
 
       {/* Vista de tabla o tarjetas */}
       {productosFiltrados.length === 0 ? (
         <EmptyState
-          icon={busqueda || filtroEstado !== 'todos' ? '🔍' : '📦'}
+          icon={busqueda || filtroEstado !== 'todos' ? Filter : Package}
           title={busqueda || filtroEstado !== 'todos' ? 'No se encontraron productos' : 'No hay productos registrados'}
           description={busqueda || filtroEstado !== 'todos' ? 'Intenta con otros términos de búsqueda o filtros' : 'Comienza agregando tu primer producto al inventario'}
           actionLabel={!busqueda && filtroEstado === 'todos' ? 'Agregar producto' : undefined}
@@ -234,60 +261,68 @@ export default function Inventario() {
 // ── Vista de Tabla ───────────────────────────────────────────────────────
 function VistaTabla({ productos, onEditar, onEliminar, stockBadge }) {
   return (
-    <div className="bg-white rounded-xl shadow overflow-hidden">
-      <table className="w-full text-sm">
-        <thead className="bg-gray-50 text-gray-600 text-left">
-          <tr>
-            <th className="px-4 py-3 font-semibold">Producto</th>
-            <th className="px-4 py-3 font-semibold">Tipo</th>
-            <th className="px-4 py-3 font-semibold text-right">Precio</th>
-            <th className="px-4 py-3 font-semibold text-center">Stock actual</th>
-            <th className="px-4 py-3 font-semibold text-center">Mínimo</th>
-            <th className="px-4 py-3 font-semibold text-center">Estado</th>
-            <th className="px-4 py-3 font-semibold text-center">Acciones</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-gray-100">
-          {productos.map((p) => (
-            <tr key={p.idproducto} className="hover:bg-gray-50 transition">
-              <td className="px-4 py-3">
-                <div>
-                  <p className="font-medium text-gray-800">{p.nombre}</p>
-                  {p.descripcion && (
-                    <p className="text-xs text-gray-400 mt-0.5">{p.descripcion}</p>
-                  )}
-                </div>
-              </td>
-              <td className="px-4 py-3 text-gray-500">{p.tipo || '—'}</td>
-              <td className="px-4 py-3 text-right text-gray-700">${parseFloat(p.precio).toFixed(2)}</td>
-              <td className="px-4 py-3 text-center font-semibold text-gray-800">{p.stockactual}</td>
-              <td className="px-4 py-3 text-center text-gray-500">{p.stockminimo}</td>
-              <td className="px-4 py-3 text-center">{stockBadge(p)}</td>
-              <td className="px-4 py-3 text-center">
-                <div className="flex gap-2 justify-center">
-                  <Button
-                    onClick={() => onEditar(p)}
-                    variant="ghost"
-                    size="sm"
-                    icon="✏️"
-                  >
-                    Editar
-                  </Button>
-                  <Button
-                    onClick={() => onEliminar(p)}
-                    variant="ghost"
-                    size="sm"
-                    icon="🗑️"
-                    className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                  >
-                    Eliminar
-                  </Button>
-                </div>
-              </td>
+    <div className="card overflow-hidden p-0">
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead className="bg-gradient-to-r from-gray-50 to-gray-100 text-gray-700">
+            <tr>
+              <th className="px-6 py-4 text-left font-bold">Producto</th>
+              <th className="px-6 py-4 text-left font-bold">Tipo</th>
+              <th className="px-6 py-4 text-right font-bold">Precio</th>
+              <th className="px-6 py-4 text-center font-bold">Stock actual</th>
+              <th className="px-6 py-4 text-center font-bold">Mínimo</th>
+              <th className="px-6 py-4 text-center font-bold">Estado</th>
+              <th className="px-6 py-4 text-center font-bold">Acciones</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody className="divide-y divide-gray-100">
+            {productos.map((p) => (
+              <tr key={p.idproducto} className="hover:bg-gray-50 transition group">
+                <td className="px-6 py-4">
+                  <div>
+                    <p className="font-semibold text-gray-900 group-hover:text-primary-600 transition">{p.nombre}</p>
+                    {p.descripcion && (
+                      <p className="text-xs text-gray-500 mt-1 line-clamp-1">{p.descripcion}</p>
+                    )}
+                  </div>
+                </td>
+                <td className="px-6 py-4">
+                  <span className="text-gray-600 font-medium">{p.tipo || '—'}</span>
+                </td>
+                <td className="px-6 py-4 text-right">
+                  <span className="font-bold text-gray-900">${parseFloat(p.precio).toFixed(2)}</span>
+                </td>
+                <td className="px-6 py-4 text-center">
+                  <span className="font-bold text-gray-900 text-base">{p.stockactual}</span>
+                </td>
+                <td className="px-6 py-4 text-center">
+                  <span className="text-gray-500">{p.stockminimo}</span>
+                </td>
+                <td className="px-6 py-4 text-center">{stockBadge(p)}</td>
+                <td className="px-6 py-4">
+                  <div className="flex gap-2 justify-center">
+                    <Button
+                      onClick={() => onEditar(p)}
+                      variant="ghost"
+                      size="sm"
+                      icon={Edit2}
+                    >
+                      Editar
+                    </Button>
+                    <Button
+                      onClick={() => onEliminar(p)}
+                      variant="ghost"
+                      size="sm"
+                      icon={Trash2}
+                      className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                    />
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
@@ -295,31 +330,31 @@ function VistaTabla({ productos, onEditar, onEliminar, stockBadge }) {
 // ── Vista de Tarjetas ────────────────────────────────────────────────────
 function VistaTarjetas({ productos, onEditar, onEliminar, stockBadge }) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {productos.map((p) => (
-        <div key={p.idproducto} className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 hover:shadow-md transition">
-          <div className="flex items-start justify-between mb-3">
+        <div key={p.idproducto} className="card-interactive group">
+          <div className="flex items-start justify-between mb-4">
             <div className="flex-1 min-w-0">
-              <h3 className="font-semibold text-gray-800 truncate">{p.nombre}</h3>
+              <h3 className="font-bold text-gray-900 text-lg truncate group-hover:text-primary-600 transition">{p.nombre}</h3>
               {p.tipo && (
-                <p className="text-xs text-gray-500 mt-0.5">{p.tipo}</p>
+                <p className="text-sm text-gray-500 mt-1">{p.tipo}</p>
               )}
             </div>
             {stockBadge(p)}
           </div>
 
           {p.descripcion && (
-            <p className="text-sm text-gray-600 mb-3 line-clamp-2">{p.descripcion}</p>
+            <p className="text-sm text-gray-600 mb-4 line-clamp-2 leading-relaxed">{p.descripcion}</p>
           )}
 
-          <div className="grid grid-cols-2 gap-3 mb-4 text-sm">
-            <div className="bg-gray-50 rounded-lg p-2">
-              <p className="text-xs text-gray-500">Precio</p>
-              <p className="font-semibold text-gray-800">${parseFloat(p.precio).toFixed(2)}</p>
+          <div className="grid grid-cols-2 gap-3 mb-5">
+            <div className="bg-gradient-to-br from-primary-50 to-primary-100/50 rounded-xl p-3 border border-primary-100">
+              <p className="text-xs text-primary-600 font-semibold mb-1">Precio</p>
+              <p className="font-bold text-gray-900 text-lg">${parseFloat(p.precio).toFixed(2)}</p>
             </div>
-            <div className="bg-gray-50 rounded-lg p-2">
-              <p className="text-xs text-gray-500">Stock</p>
-              <p className="font-semibold text-gray-800">{p.stockactual} / {p.stockminimo}</p>
+            <div className="bg-gradient-to-br from-blue-50 to-blue-100/50 rounded-xl p-3 border border-blue-100">
+              <p className="text-xs text-blue-600 font-semibold mb-1">Stock</p>
+              <p className="font-bold text-gray-900 text-lg">{p.stockactual} <span className="text-sm text-gray-500">/ {p.stockminimo}</span></p>
             </div>
           </div>
 
@@ -327,17 +362,17 @@ function VistaTarjetas({ productos, onEditar, onEliminar, stockBadge }) {
             <Button
               onClick={() => onEditar(p)}
               variant="secondary"
-              size="sm"
+              size="md"
               fullWidth
-              icon="✏️"
+              icon={Edit2}
             >
               Editar
             </Button>
             <Button
               onClick={() => onEliminar(p)}
               variant="danger"
-              size="sm"
-              icon="🗑️"
+              size="md"
+              icon={Trash2}
             />
           </div>
         </div>
@@ -396,104 +431,115 @@ function FormularioProducto({ producto, onClose, onGuardado, toast }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto">
-        <div className="flex justify-between items-center mb-5">
-          <h3 className="text-lg font-bold text-gray-800">
-            {producto ? '✏️ Editar producto' : '➕ Nuevo producto'}
-          </h3>
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
+      <div className="bg-white rounded-3xl shadow-soft-lg w-full max-w-2xl p-8 max-h-[90vh] overflow-y-auto animate-scale-in">
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <h3 className="text-2xl font-bold text-gray-900">
+              {producto ? 'Editar producto' : 'Nuevo producto'}
+            </h3>
+            <p className="text-sm text-gray-500 mt-1">
+              {producto ? 'Actualiza la información del producto' : 'Completa los datos del nuevo producto'}
+            </p>
+          </div>
           <button 
             onClick={onClose} 
-            className="text-gray-400 hover:text-gray-600 text-2xl leading-none w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 transition"
-            aria-label="Cerrar"
+            className="text-gray-400 hover:text-gray-600 p-2 hover:bg-gray-100 rounded-xl transition"
           >
-            ✕
+            <X className="w-6 h-6" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label className="text-sm font-medium text-gray-700 block mb-1">Nombre *</label>
+            <label className="text-sm font-bold text-gray-700 block mb-2">Nombre *</label>
             <input
               value={nombre}
               onChange={(e) => setNombre(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+              className="input-modern"
               placeholder="Ej: Taza personalizada"
               required
             />
           </div>
 
           <div>
-            <label className="text-sm font-medium text-gray-700 block mb-1">Descripción</label>
+            <label className="text-sm font-bold text-gray-700 block mb-2">Descripción</label>
             <textarea
               value={descripcion}
               onChange={(e) => setDescripcion(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+              className="input-modern"
               placeholder="Descripción del producto"
-              rows="2"
+              rows="3"
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-sm font-medium text-gray-700 block mb-1">Precio *</label>
-              <input
-                type="number"
-                step="0.01"
-                min="0"
-                value={precio}
-                onChange={(e) => setPrecio(e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
-                placeholder="0.00"
-                required
-              />
+              <label className="text-sm font-bold text-gray-700 block mb-2">Precio *</label>
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-semibold">$</span>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={precio}
+                  onChange={(e) => setPrecio(e.target.value)}
+                  className="input-modern pl-8"
+                  placeholder="0.00"
+                  required
+                />
+              </div>
             </div>
 
             <div>
-              <label className="text-sm font-medium text-gray-700 block mb-1">Tipo</label>
+              <label className="text-sm font-bold text-gray-700 block mb-2">Tipo</label>
               <input
                 value={tipo}
                 onChange={(e) => setTipo(e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+                className="input-modern"
                 placeholder="Ej: Taza, Ropa"
               />
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-sm font-medium text-gray-700 block mb-1">Stock actual</label>
+              <label className="text-sm font-bold text-gray-700 block mb-2">Stock actual</label>
               <input
                 type="number"
                 min="0"
                 value={stockActual}
                 onChange={(e) => setStockActual(e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+                className="input-modern"
               />
             </div>
 
             <div>
-              <label className="text-sm font-medium text-gray-700 block mb-1">Stock mínimo</label>
+              <label className="text-sm font-bold text-gray-700 block mb-2">Stock mínimo</label>
               <input
                 type="number"
                 min="0"
                 value={stockMinimo}
                 onChange={(e) => setStockMinimo(e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+                className="input-modern"
               />
             </div>
           </div>
 
           {error && (
-            <p className="text-red-500 text-sm bg-red-50 border border-red-200 rounded-lg px-3 py-2">{error}</p>
+            <div className="flex items-start gap-3 text-sm bg-red-50 border-2 border-red-200 rounded-xl px-4 py-3">
+              <AlertTriangle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
+              <p className="text-red-700 font-medium">{error}</p>
+            </div>
           )}
 
-          <div className="flex gap-3 pt-2">
+          <div className="flex gap-3 pt-4">
             <Button
               type="button"
               onClick={onClose}
               variant="secondary"
               fullWidth
+              size="lg"
             >
               Cancelar
             </Button>
@@ -501,9 +547,10 @@ function FormularioProducto({ producto, onClose, onGuardado, toast }) {
               type="submit"
               loading={enviando}
               fullWidth
-              icon="💾"
+              icon={producto ? Edit2 : Plus}
+              size="lg"
             >
-              Guardar
+              {producto ? 'Actualizar' : 'Crear producto'}
             </Button>
           </div>
         </form>

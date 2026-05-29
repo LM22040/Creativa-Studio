@@ -7,19 +7,20 @@ import SearchBar from '../components/SearchBar';
 import Badge from '../components/Badge';
 import EmptyState from '../components/EmptyState';
 import { useToast } from '../components/Toast';
+import { Plus, Eye, ShoppingCart, Phone, Calendar, User, X, Trash2, AlertTriangle, CheckCircle } from 'lucide-react';
 
 const ESTADO_COLORES = {
-  pendiente:   'warning',
-  'en proceso':'info',
-  completado:  'success',
-  cancelado:   'danger',
+  pendiente: 'warning',
+  'en proceso': 'info',
+  completado: 'success',
+  cancelado: 'danger',
 };
 
 export default function Pedidos() {
   const toast = useToast();
-  const [pedidos, setPedidos]     = useState([]);
-  const [cargando, setCargando]   = useState(true);
-  const [error, setError]         = useState('');
+  const [pedidos, setPedidos] = useState([]);
+  const [cargando, setCargando] = useState(true);
+  const [error, setError] = useState('');
   const [mostrarForm, setMostrarForm] = useState(false);
   const [pedidoDetalle, setPedidoDetalle] = useState(null);
   const [filtroEstado, setFiltroEstado] = useState('todos');
@@ -59,14 +60,28 @@ export default function Pedidos() {
     }
   };
 
-  if (cargando) return <p className="text-gray-500 p-6">Cargando pedidos...</p>;
-  if (error)    return <p className="text-red-500 p-6">{error}</p>;
+  if (cargando) {
+    return (
+      <div className="p-8 max-w-7xl mx-auto">
+        <div className="space-y-6">
+          <div className="skeleton h-12 w-1/3 rounded-xl" />
+          <div className="skeleton h-12 w-full rounded-xl" />
+          <div className="space-y-4">
+            {[1, 2, 3].map(i => (
+              <div key={i} className="skeleton h-32 rounded-2xl" />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) return <p className="text-red-500 p-8">{error}</p>;
 
   let pedidosFiltrados = filtroEstado === 'todos' 
     ? pedidos 
     : pedidos.filter(p => p.estado === filtroEstado);
 
-  // Filtrar por búsqueda
   if (busqueda) {
     pedidosFiltrados = pedidosFiltrados.filter(p =>
       p.nombrecliente.toLowerCase().includes(busqueda.toLowerCase()) ||
@@ -75,40 +90,45 @@ export default function Pedidos() {
   }
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
+    <div className="p-8 max-w-7xl mx-auto space-y-6 animate-fade-in">
+      {/* Header */}
+      <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gray-800">Pedidos</h2>
-          <p className="text-gray-500 text-sm">Gestión de pedidos de clientes</p>
+          <h2 className="text-3xl font-bold text-gray-900 mb-2">Pedidos</h2>
+          <p className="text-gray-500 flex items-center gap-2">
+            <ShoppingCart className="w-4 h-4" />
+            Gestión de pedidos de clientes
+          </p>
         </div>
-        <Button
-          onClick={() => setMostrarForm(true)}
-          icon="➕"
-        >
+        <Button onClick={() => setMostrarForm(true)} icon={Plus} size="lg">
           Nuevo pedido
         </Button>
       </div>
 
       {/* Barra de búsqueda */}
-      <div className="mb-4">
-        <SearchBar
-          value={busqueda}
-          onChange={setBusqueda}
-          placeholder="Buscar por cliente o teléfono..."
-        />
-      </div>
+      <SearchBar
+        value={busqueda}
+        onChange={setBusqueda}
+        placeholder="Buscar por cliente o teléfono..."
+      />
 
       {/* Filtros */}
-      <div className="mb-4 flex gap-2 flex-wrap">
-        {['todos', 'pendiente', 'en proceso', 'completado', 'cancelado'].map(estado => (
+      <div className="flex gap-3 flex-wrap">
+        {[
+          { value: 'todos', label: 'Todos', icon: ShoppingCart },
+          { value: 'pendiente', label: 'Pendiente', icon: AlertTriangle },
+          { value: 'en proceso', label: 'En proceso', icon: Calendar },
+          { value: 'completado', label: 'Completado', icon: CheckCircle },
+          { value: 'cancelado', label: 'Cancelado', icon: X },
+        ].map(filtro => (
           <Button
-            key={estado}
-            onClick={() => setFiltroEstado(estado)}
-            variant={filtroEstado === estado ? 'primary' : 'secondary'}
-            size="sm"
-            className="capitalize"
+            key={filtro.value}
+            onClick={() => setFiltroEstado(filtro.value)}
+            variant={filtroEstado === filtro.value ? 'primary' : 'secondary'}
+            size="md"
+            icon={filtro.icon}
           >
-            {estado}
+            {filtro.label}
           </Button>
         ))}
       </div>
@@ -131,39 +151,64 @@ export default function Pedidos() {
       {/* Lista de pedidos */}
       {pedidosFiltrados.length === 0 ? (
         <EmptyState
-          icon={busqueda || filtroEstado !== 'todos' ? '🔍' : '📋'}
+          icon={busqueda || filtroEstado !== 'todos' ? '🔍' : ShoppingCart}
           title={busqueda || filtroEstado !== 'todos' ? 'No se encontraron pedidos' : 'No hay pedidos registrados'}
           description={busqueda || filtroEstado !== 'todos' ? 'Intenta con otros términos de búsqueda o filtros' : 'Comienza registrando tu primer pedido'}
           actionLabel={!busqueda && filtroEstado === 'todos' ? 'Nuevo pedido' : undefined}
           onAction={!busqueda && filtroEstado === 'todos' ? () => setMostrarForm(true) : undefined}
         />
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-4">
           {pedidosFiltrados.map((p) => (
-            <div key={p.idpedido} className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <p className="font-semibold text-gray-800">{p.nombrecliente}</p>
-                    <Badge variant={ESTADO_COLORES[p.estado] || 'default'} className="capitalize">
-                      {p.estado}
-                    </Badge>
+            <div key={p.idpedido} className="card-interactive group">
+              <div className="flex items-start justify-between gap-6">
+                <div className="flex items-start gap-4 flex-1">
+                  <div className="w-14 h-14 bg-gradient-to-br from-primary-400 to-primary-600 rounded-2xl flex items-center justify-center text-white font-bold text-xl shadow-soft group-hover:scale-110 transition-transform">
+                    {p.nombrecliente.charAt(0).toUpperCase()}
                   </div>
-                  <p className="text-gray-400 text-xs">
-                    {p.telefonocliente && `📞 ${p.telefonocliente} · `}
-                    {new Date(p.fechapedido).toLocaleDateString('es-SV', {
-                      day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
-                    })}
-                    {p.nombreusuario && ` · Registrado por: ${p.nombreusuario}`}
-                  </p>
+                  
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-3 mb-2">
+                      <h3 className="font-bold text-gray-900 text-lg group-hover:text-primary-600 transition">
+                        {p.nombrecliente}
+                      </h3>
+                      <Badge variant={ESTADO_COLORES[p.estado] || 'default'}>
+                        {p.estado}
+                      </Badge>
+                    </div>
+                    
+                    <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-500">
+                      {p.telefonocliente && (
+                        <span className="flex items-center gap-1.5">
+                          <Phone className="w-4 h-4" />
+                          {p.telefonocliente}
+                        </span>
+                      )}
+                      <span className="flex items-center gap-1.5">
+                        <Calendar className="w-4 h-4" />
+                        {new Date(p.fechapedido).toLocaleDateString('es-SV', {
+                          day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
+                        })}
+                      </span>
+                      {p.nombreusuario && (
+                        <span className="flex items-center gap-1.5">
+                          <User className="w-4 h-4" />
+                          {p.nombreusuario}
+                        </span>
+                      )}
+                    </div>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <p className="font-bold text-gray-800 text-lg">${parseFloat(p.total).toFixed(2)}</p>
+                
+                <div className="text-right shrink-0">
+                  <p className="text-3xl font-bold text-gray-900 mb-2">
+                    ${parseFloat(p.total).toFixed(2)}
+                  </p>
                   <Button
                     onClick={() => verDetalle(p.idpedido)}
-                    variant="link"
+                    variant="outline"
                     size="sm"
-                    icon="👁️"
+                    icon={Eye}
                   >
                     Ver detalle
                   </Button>
@@ -171,16 +216,16 @@ export default function Pedidos() {
               </div>
               
               {/* Cambiar estado */}
-              <div className="mt-3 pt-3 border-t border-gray-100 flex gap-2 flex-wrap items-center">
-                <span className="text-xs text-gray-500 font-medium">Cambiar estado:</span>
-                {['pendiente','en proceso','completado','cancelado'].map(est => (
+              <div className="mt-5 pt-5 border-t border-gray-100 flex gap-2 flex-wrap items-center">
+                <span className="text-sm text-gray-600 font-semibold mr-2">Cambiar estado:</span>
+                {['pendiente', 'en proceso', 'completado', 'cancelado'].map(est => (
                   <Button
                     key={est}
                     onClick={() => cambiarEstado(p.idpedido, est)}
                     disabled={p.estado === est}
                     variant={p.estado === est ? 'ghost' : 'secondary'}
                     size="sm"
-                    className={`capitalize ${p.estado === est ? 'opacity-50 cursor-default' : ''}`}
+                    className={`capitalize ${p.estado === est ? 'opacity-50 cursor-not-allowed' : ''}`}
                   >
                     {est}
                   </Button>
@@ -197,52 +242,78 @@ export default function Pedidos() {
 // ── Modal de detalle del pedido ───────────────────────────────────────────
 function DetallePedido({ pedido, onClose }) {
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl p-6 max-h-[90vh] overflow-y-auto">
-        <div className="flex justify-between items-center mb-5">
-          <h3 className="text-lg font-bold text-gray-800">📋 Detalle del pedido #{pedido.idpedido}</h3>
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
+      <div className="bg-white rounded-3xl shadow-soft-lg w-full max-w-3xl p-8 max-h-[90vh] overflow-y-auto animate-scale-in">
+        <div className="flex justify-between items-start mb-6">
+          <div>
+            <h3 className="text-2xl font-bold text-gray-900 mb-1">
+              Pedido #{pedido.idpedido}
+            </h3>
+            <p className="text-sm text-gray-500">Detalle completo del pedido</p>
+          </div>
           <button 
             onClick={onClose} 
-            className="text-gray-400 hover:text-gray-600 text-2xl leading-none w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 transition"
-            aria-label="Cerrar"
+            className="text-gray-400 hover:text-gray-600 p-2 hover:bg-gray-100 rounded-xl transition"
           >
-            ✕
+            <X className="w-6 h-6" />
           </button>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-6">
           {/* Información del cliente */}
-          <div className="bg-gray-50 rounded-lg p-4">
-            <h4 className="font-semibold text-gray-700 text-sm mb-2">Información del cliente</h4>
-            <div className="space-y-1 text-sm">
-              <p><span className="text-gray-500">Nombre:</span> <span className="font-medium">{pedido.nombrecliente}</span></p>
+          <div className="bg-gradient-to-br from-gray-50 to-gray-100/50 rounded-2xl p-6 border border-gray-200">
+            <h4 className="font-bold text-gray-900 text-lg mb-4 flex items-center gap-2">
+              <User className="w-5 h-5 text-primary-500" />
+              Información del cliente
+            </h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+              <div>
+                <p className="text-gray-500 mb-1">Nombre</p>
+                <p className="font-semibold text-gray-900">{pedido.nombrecliente}</p>
+              </div>
               {pedido.telefonocliente && (
-                <p><span className="text-gray-500">Teléfono:</span> <span className="font-medium">{pedido.telefonocliente}</span></p>
+                <div>
+                  <p className="text-gray-500 mb-1">Teléfono</p>
+                  <p className="font-semibold text-gray-900 flex items-center gap-2">
+                    <Phone className="w-4 h-4 text-gray-400" />
+                    {pedido.telefonocliente}
+                  </p>
+                </div>
               )}
-              <p><span className="text-gray-500">Fecha:</span> <span className="font-medium">
-                {new Date(pedido.fechapedido).toLocaleDateString('es-SV', {
-                  day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit'
-                })}
-              </span></p>
-              <p><span className="text-gray-500">Estado:</span> <Badge variant={ESTADO_COLORES[pedido.estado]} className="capitalize ml-2">
-                {pedido.estado}
-              </Badge></p>
+              <div>
+                <p className="text-gray-500 mb-1">Fecha del pedido</p>
+                <p className="font-semibold text-gray-900 flex items-center gap-2">
+                  <Calendar className="w-4 h-4 text-gray-400" />
+                  {new Date(pedido.fechapedido).toLocaleDateString('es-SV', {
+                    day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit'
+                  })}
+                </p>
+              </div>
+              <div>
+                <p className="text-gray-500 mb-1">Estado</p>
+                <Badge variant={ESTADO_COLORES[pedido.estado]} size="lg">
+                  {pedido.estado}
+                </Badge>
+              </div>
             </div>
           </div>
 
           {/* Productos del pedido */}
           <div>
-            <h4 className="font-semibold text-gray-700 text-sm mb-3">Productos</h4>
-            <div className="space-y-2">
+            <h4 className="font-bold text-gray-900 text-lg mb-4 flex items-center gap-2">
+              <ShoppingCart className="w-5 h-5 text-primary-500" />
+              Productos ({pedido.detalle?.length || 0})
+            </h4>
+            <div className="space-y-3">
               {pedido.detalle && pedido.detalle.map((item) => (
-                <div key={item.iddetalle} className="flex justify-between items-center bg-gray-50 rounded-lg p-3">
+                <div key={item.iddetalle} className="flex justify-between items-center bg-gradient-to-r from-gray-50 to-transparent rounded-xl p-4 border border-gray-100">
                   <div className="flex-1">
-                    <p className="font-medium text-gray-800 text-sm">{item.nombreproducto}</p>
-                    <p className="text-xs text-gray-500">
+                    <p className="font-semibold text-gray-900 mb-1">{item.nombreproducto}</p>
+                    <p className="text-sm text-gray-500">
                       ${parseFloat(item.preciounitario).toFixed(2)} × {item.cantidad} unidad(es)
                     </p>
                   </div>
-                  <p className="font-semibold text-gray-800">
+                  <p className="text-xl font-bold text-gray-900">
                     ${(parseFloat(item.preciounitario) * item.cantidad).toFixed(2)}
                   </p>
                 </div>
@@ -251,16 +322,18 @@ function DetallePedido({ pedido, onClose }) {
           </div>
 
           {/* Total */}
-          <div className="bg-orange-50 rounded-lg px-4 py-3 flex justify-between items-center">
-            <span className="font-semibold text-gray-700">Total</span>
-            <span className="text-xl font-bold text-orange-600">${parseFloat(pedido.total).toFixed(2)}</span>
+          <div className="bg-gradient-to-r from-primary-50 to-accent-50 rounded-2xl px-6 py-5 flex justify-between items-center border-2 border-primary-200">
+            <span className="text-lg font-bold text-gray-900">Total del pedido</span>
+            <span className="text-3xl font-bold text-primary-600">
+              ${parseFloat(pedido.total).toFixed(2)}
+            </span>
           </div>
 
           <Button
             onClick={onClose}
             variant="secondary"
             fullWidth
-            icon="✓"
+            size="lg"
           >
             Cerrar
           </Button>
@@ -272,12 +345,12 @@ function DetallePedido({ pedido, onClose }) {
 
 // ── Formulario de nuevo pedido ───────────────────────────────────────────────
 function FormularioPedido({ onClose, onCreado, toast }) {
-  const [nombre, setNombre]       = useState('');
-  const [telefono, setTelefono]   = useState('');
+  const [nombre, setNombre] = useState('');
+  const [telefono, setTelefono] = useState('');
   const [productos, setProductos] = useState([]);
-  const [items, setItems]         = useState([{ idProducto: '', cantidad: 1 }]);
-  const [error, setError]         = useState('');
-  const [enviando, setEnviando]   = useState(false);
+  const [items, setItems] = useState([{ idProducto: '', cantidad: 1 }]);
+  const [error, setError] = useState('');
+  const [enviando, setEnviando] = useState(false);
 
   useEffect(() => {
     api.get('/productos').then(r => setProductos(r.data));
@@ -330,92 +403,100 @@ function FormularioPedido({ onClose, onCreado, toast }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto">
-        <div className="flex justify-between items-center mb-5">
-          <h3 className="text-lg font-bold text-gray-800">➕ Nuevo pedido</h3>
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
+      <div className="bg-white rounded-3xl shadow-soft-lg w-full max-w-2xl p-8 max-h-[90vh] overflow-y-auto animate-scale-in">
+        <div className="flex justify-between items-start mb-6">
+          <div>
+            <h3 className="text-2xl font-bold text-gray-900 mb-1">Nuevo pedido</h3>
+            <p className="text-sm text-gray-500">Registra un nuevo pedido de cliente</p>
+          </div>
           <button 
             onClick={onClose} 
-            className="text-gray-400 hover:text-gray-600 text-2xl leading-none w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 transition"
-            aria-label="Cerrar"
+            className="text-gray-400 hover:text-gray-600 p-2 hover:bg-gray-100 rounded-xl transition"
           >
-            ✕
+            <X className="w-6 h-6" />
           </button>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-5">
           <div>
-            <label className="text-sm font-medium text-gray-700 block mb-1">Nombre del cliente *</label>
+            <label className="text-sm font-bold text-gray-700 block mb-2">Nombre del cliente *</label>
             <input
               value={nombre}
               onChange={e => setNombre(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+              className="input-modern"
               placeholder="Nombre completo"
             />
           </div>
+          
           <div>
-            <label className="text-sm font-medium text-gray-700 block mb-1">Teléfono (opcional)</label>
+            <label className="text-sm font-bold text-gray-700 block mb-2">Teléfono (opcional)</label>
             <input
               value={telefono}
               onChange={e => setTelefono(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+              className="input-modern"
               placeholder="0000-0000"
             />
           </div>
 
           <div>
-            <label className="text-sm font-medium text-gray-700 block mb-2">Productos</label>
-            {items.map((item, idx) => (
-              <div key={idx} className="flex gap-2 mb-2">
-                <select
-                  value={item.idProducto}
-                  onChange={e => actualizarItem(idx, 'idProducto', e.target.value)}
-                  className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
-                >
-                  <option value="">Seleccionar producto</option>
-                  {productos.map(p => (
-                    <option key={p.idproducto} value={p.idproducto}>
-                      {p.nombre} (${parseFloat(p.precio).toFixed(2)}) — stock: {p.stockactual}
-                    </option>
-                  ))}
-                </select>
-                <input
-                  type="number"
-                  min="1"
-                  value={item.cantidad}
-                  onChange={e => actualizarItem(idx, 'cantidad', e.target.value)}
-                  className="w-16 border border-gray-300 rounded-lg px-2 py-2 text-sm text-center focus:outline-none focus:ring-2 focus:ring-orange-400"
-                />
-                {items.length > 1 && (
-                  <button 
-                    onClick={() => eliminarItem(idx)} 
-                    className="text-red-400 hover:text-red-600 hover:bg-red-50 text-lg px-2 rounded-lg transition"
-                    aria-label="Eliminar producto"
+            <label className="text-sm font-bold text-gray-700 block mb-3">Productos</label>
+            <div className="space-y-3">
+              {items.map((item, idx) => (
+                <div key={idx} className="flex gap-3 items-start">
+                  <select
+                    value={item.idProducto}
+                    onChange={e => actualizarItem(idx, 'idProducto', e.target.value)}
+                    className="flex-1 input-modern"
                   >
-                    ✕
-                  </button>
-                )}
-              </div>
-            ))}
+                    <option value="">Seleccionar producto</option>
+                    {productos.map(p => (
+                      <option key={p.idproducto} value={p.idproducto}>
+                        {p.nombre} (${parseFloat(p.precio).toFixed(2)}) — stock: {p.stockactual}
+                      </option>
+                    ))}
+                  </select>
+                  <input
+                    type="number"
+                    min="1"
+                    value={item.cantidad}
+                    onChange={e => actualizarItem(idx, 'cantidad', e.target.value)}
+                    className="w-24 input-modern text-center"
+                    placeholder="Cant."
+                  />
+                  {items.length > 1 && (
+                    <button 
+                      onClick={() => eliminarItem(idx)} 
+                      className="text-red-500 hover:text-red-700 hover:bg-red-50 p-3 rounded-xl transition"
+                    >
+                      <Trash2 className="w-5 h-5" />
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
             <Button
               onClick={agregarItem}
               variant="ghost"
-              size="sm"
-              icon="➕"
-              className="mt-1"
+              size="md"
+              icon={Plus}
+              className="mt-3"
             >
               Agregar producto
             </Button>
           </div>
 
           {/* Total */}
-          <div className="bg-orange-50 rounded-lg px-4 py-3 flex justify-between items-center">
-            <span className="text-sm font-medium text-gray-700">Total estimado</span>
-            <span className="text-lg font-bold text-orange-600">${calcularTotal().toFixed(2)}</span>
+          <div className="bg-gradient-to-r from-primary-50 to-accent-50 rounded-2xl px-6 py-4 flex justify-between items-center border-2 border-primary-200">
+            <span className="text-sm font-bold text-gray-700">Total estimado</span>
+            <span className="text-2xl font-bold text-primary-600">${calcularTotal().toFixed(2)}</span>
           </div>
 
           {error && (
-            <p className="text-red-500 text-sm bg-red-50 border border-red-200 rounded-lg px-3 py-2">{error}</p>
+            <div className="flex items-start gap-3 text-sm bg-red-50 border-2 border-red-200 rounded-xl px-4 py-3">
+              <AlertTriangle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
+              <p className="text-red-700 font-medium">{error}</p>
+            </div>
           )}
 
           <div className="flex gap-3 pt-2">
@@ -423,6 +504,7 @@ function FormularioPedido({ onClose, onCreado, toast }) {
               onClick={onClose}
               variant="secondary"
               fullWidth
+              size="lg"
             >
               Cancelar
             </Button>
@@ -430,7 +512,8 @@ function FormularioPedido({ onClose, onCreado, toast }) {
               onClick={handleSubmit}
               loading={enviando}
               fullWidth
-              icon="📝"
+              icon={CheckCircle}
+              size="lg"
             >
               Registrar pedido
             </Button>
