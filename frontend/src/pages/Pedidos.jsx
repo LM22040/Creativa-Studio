@@ -84,8 +84,8 @@ export default function Pedidos() {
 
   if (busqueda) {
     pedidosFiltrados = pedidosFiltrados.filter(p =>
-      p.nombrecliente.toLowerCase().includes(busqueda.toLowerCase()) ||
-      (p.telefonocliente && p.telefonocliente.includes(busqueda))
+      p.nombreCliente.toLowerCase().includes(busqueda.toLowerCase()) ||
+      (p.telefonoCliente && p.telefonoCliente.includes(busqueda))
     );
   }
 
@@ -160,17 +160,17 @@ export default function Pedidos() {
       ) : (
         <div className="space-y-4">
           {pedidosFiltrados.map((p) => (
-            <div key={p.idpedido} className="card-interactive group">
+            <div key={p.idPedido} className="card-interactive group">
               <div className="flex items-start justify-between gap-6">
                 <div className="flex items-start gap-4 flex-1">
                   <div className="w-14 h-14 bg-gradient-to-br from-primary-400 to-primary-600 rounded-2xl flex items-center justify-center text-white font-bold text-xl shadow-soft group-hover:scale-110 transition-transform">
-                    {p.nombrecliente.charAt(0).toUpperCase()}
+                    {p.nombreCliente.charAt(0).toUpperCase()}
                   </div>
                   
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-3 mb-2">
                       <h3 className="font-bold text-gray-900 text-lg group-hover:text-primary-600 transition">
-                        {p.nombrecliente}
+                        {p.nombreCliente}
                       </h3>
                       <Badge variant={ESTADO_COLORES[p.estado] || 'default'}>
                         {p.estado}
@@ -178,22 +178,22 @@ export default function Pedidos() {
                     </div>
                     
                     <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-500">
-                      {p.telefonocliente && (
+                      {p.telefonoCliente && (
                         <span className="flex items-center gap-1.5">
                           <Phone className="w-4 h-4" />
-                          {p.telefonocliente}
+                          {p.telefonoCliente}
                         </span>
                       )}
                       <span className="flex items-center gap-1.5">
                         <Calendar className="w-4 h-4" />
-                        {new Date(p.fechapedido).toLocaleDateString('es-SV', {
+                        {new Date(p.fechaPedido).toLocaleDateString('es-SV', {
                           day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
                         })}
                       </span>
-                      {p.nombreusuario && (
+                      {p.nombreUsuario && (
                         <span className="flex items-center gap-1.5">
                           <User className="w-4 h-4" />
-                          {p.nombreusuario}
+                          {p.nombreUsuario}
                         </span>
                       )}
                     </div>
@@ -205,7 +205,7 @@ export default function Pedidos() {
                     ${parseFloat(p.total).toFixed(2)}
                   </p>
                   <Button
-                    onClick={() => verDetalle(p.idpedido)}
+                    onClick={() => verDetalle(p.idPedido)}
                     variant="outline"
                     size="sm"
                     icon={Eye}
@@ -221,7 +221,7 @@ export default function Pedidos() {
                 {['pendiente', 'en proceso', 'completado', 'cancelado'].map(est => (
                   <Button
                     key={est}
-                    onClick={() => cambiarEstado(p.idpedido, est)}
+                    onClick={() => cambiarEstado(p.idPedido, est)}
                     disabled={p.estado === est}
                     variant={p.estado === est ? 'ghost' : 'secondary'}
                     size="sm"
@@ -247,7 +247,7 @@ function DetallePedido({ pedido, onClose }) {
         <div className="flex justify-between items-start mb-6">
           <div>
             <h3 className="text-2xl font-bold text-gray-900 mb-1">
-              Pedido #{pedido.idpedido}
+              Pedido #{pedido.idPedido}
             </h3>
             <p className="text-sm text-gray-500">Detalle completo del pedido</p>
           </div>
@@ -269,14 +269,14 @@ function DetallePedido({ pedido, onClose }) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
               <div>
                 <p className="text-gray-500 mb-1">Nombre</p>
-                <p className="font-semibold text-gray-900">{pedido.nombrecliente}</p>
+                <p className="font-semibold text-gray-900">{pedido.nombreCliente}</p>
               </div>
-              {pedido.telefonocliente && (
+              {pedido.telefonoCliente && (
                 <div>
                   <p className="text-gray-500 mb-1">Teléfono</p>
                   <p className="font-semibold text-gray-900 flex items-center gap-2">
                     <Phone className="w-4 h-4 text-gray-400" />
-                    {pedido.telefonocliente}
+                    {pedido.telefonoCliente}
                   </p>
                 </div>
               )}
@@ -284,7 +284,7 @@ function DetallePedido({ pedido, onClose }) {
                 <p className="text-gray-500 mb-1">Fecha del pedido</p>
                 <p className="font-semibold text-gray-900 flex items-center gap-2">
                   <Calendar className="w-4 h-4 text-gray-400" />
-                  {new Date(pedido.fechapedido).toLocaleDateString('es-SV', {
+                  {new Date(pedido.fechaPedido).toLocaleDateString('es-SV', {
                     day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit'
                   })}
                 </p>
@@ -306,15 +306,15 @@ function DetallePedido({ pedido, onClose }) {
             </h4>
             <div className="space-y-3">
               {pedido.detalle && pedido.detalle.map((item) => (
-                <div key={item.iddetalle} className="flex justify-between items-center bg-gradient-to-r from-gray-50 to-transparent rounded-xl p-4 border border-gray-100">
+                <div key={item.idDetalle} className="flex justify-between items-center bg-gradient-to-r from-gray-50 to-transparent rounded-xl p-4 border border-gray-100">
                   <div className="flex-1">
-                    <p className="font-semibold text-gray-900 mb-1">{item.nombreproducto}</p>
+                    <p className="font-semibold text-gray-900 mb-1">{item.nombreProducto}</p>
                     <p className="text-sm text-gray-500">
-                      ${parseFloat(item.preciounitario).toFixed(2)} × {item.cantidad} unidad(es)
+                      ${parseFloat(item.precioUnitario).toFixed(2)} × {item.cantidad} unidad(es)
                     </p>
                   </div>
                   <p className="text-xl font-bold text-gray-900">
-                    ${(parseFloat(item.preciounitario) * item.cantidad).toFixed(2)}
+                    ${(parseFloat(item.precioUnitario) * item.cantidad).toFixed(2)}
                   </p>
                 </div>
               ))}
@@ -368,7 +368,7 @@ function FormularioPedido({ onClose, onCreado, toast }) {
 
   const calcularTotal = () => {
     return items.reduce((acc, item) => {
-      const prod = productos.find(p => p.idproducto === parseInt(item.idProducto));
+      const prod = productos.find(p => p.idProducto === parseInt(item.idProducto));
       return acc + (prod ? parseFloat(prod.precio) * item.cantidad : 0);
     }, 0);
   };
@@ -451,8 +451,8 @@ function FormularioPedido({ onClose, onCreado, toast }) {
                   >
                     <option value="">Seleccionar producto</option>
                     {productos.map(p => (
-                      <option key={p.idproducto} value={p.idproducto}>
-                        {p.nombre} (${parseFloat(p.precio).toFixed(2)}) — stock: {p.stockactual}
+                      <option key={p.idProducto} value={p.idProducto}>
+                        {p.nombre} (${parseFloat(p.precio).toFixed(2)}) — stock: {p.stockActual}
                       </option>
                     ))}
                   </select>

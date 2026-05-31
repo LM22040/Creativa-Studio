@@ -19,8 +19,12 @@ export default function ConfirmModal({
   if (!isOpen) return null;
 
   const handleConfirm = async () => {
-    await onConfirm();
-    onClose();
+    try {
+      await onConfirm();
+      onClose();
+    } catch {
+      // El componente padre muestra el error; no cerrar el modal
+    }
   };
 
   const iconBgColors = {

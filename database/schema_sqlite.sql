@@ -53,7 +53,7 @@ CREATE TABLE IF NOT EXISTS DetallePedido (
 
 -- Usuario admin (contraseña: admin123)
 INSERT OR IGNORE INTO Usuario (nombre, correo, rol, passwordHash) VALUES
-  ('Administrador', 'admin@creativaestudios.com', 'admin', '$2b$10$Da3az9o4fVnwtDPBDqOSJOml3KBSlb8C.1CumkJQJ52ONimanOxeG');
+  ('Administrador', 'admin@creativaestudios.com', 'admin', '$2b$10$QMRvbNVqbxmpNndB.cpNReTpgmcCHNq9kdnVbwBgbbW73hr6bkIy.');
 
 -- Productos de ejemplo
 INSERT OR IGNORE INTO Producto (nombre, descripcion, precio, tipo, stockActual, stockMinimo) VALUES

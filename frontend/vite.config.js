@@ -9,7 +9,7 @@ export default defineConfig({
     // Proxy para evitar problemas de CORS en desarrollo
     proxy: {
       '/api': {
-        target: 'http://localhost:4000',
+        target: 'http://localhost:3000', // Puerto del backend con SQLite
         changeOrigin: true,
       },
     },

@@ -47,11 +47,13 @@ export default function Inventario() {
     if (!productoEliminar) return;
     
     try {
-      await api.delete(`/productos/${productoEliminar.idproducto}`);
+      await api.delete(`/productos/${productoEliminar.idProducto}`);
       toast.success(`Producto "${productoEliminar.nombre}" eliminado`);
+      setProductoEliminar(null);
       cargarProductos();
     } catch (err) {
       toast.error(err.response?.data?.error || 'Error al eliminar el producto');
+      throw err;
     }
   };
 
@@ -66,18 +68,18 @@ export default function Inventario() {
   };
 
   const stockBadge = (producto) => {
-    if (producto.stockactual === 0) {
+    if (producto.stockActual === 0) {
       return <Badge variant="danger" icon={X}>Sin stock</Badge>;
     }
-    if (producto.stockactual <= producto.stockminimo) {
+    if (producto.stockActual <= producto.stockMinimo) {
       return <Badge variant="warning" icon={AlertTriangle}>Stock bajo</Badge>;
     }
     return <Badge variant="success" icon={CheckCircle}>OK</Badge>;
   };
 
   const getEstadoProducto = (producto) => {
-    if (producto.stockactual === 0) return 'agotado';
-    if (producto.stockactual <= producto.stockminimo) return 'bajo';
+    if (producto.stockActual === 0) return 'agotado';
+    if (producto.stockActual <= producto.stockMinimo) return 'bajo';
     return 'ok';
   };
 
@@ -99,7 +101,7 @@ export default function Inventario() {
 
   if (error) return <p className="text-red-500 p-8">{error}</p>;
 
-  const alertas = productos.filter(p => p.stockactual <= p.stockminimo);
+  const alertas = productos.filter(p => p.stockActual <= p.stockMinimo);
   
   let productosFiltrados = productos.filter(p => 
     p.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
@@ -191,9 +193,9 @@ export default function Inventario() {
               </p>
               <ul className="text-yellow-800 text-sm space-y-1">
                 {alertas.slice(0, 3).map(p => (
-                  <li key={p.idproducto} className="flex items-center gap-2">
+                  <li key={p.idProducto} className="flex items-center gap-2">
                     <span className="w-1.5 h-1.5 bg-yellow-600 rounded-full" />
-                    {p.nombre} — stock actual: {p.stockactual}
+                    {p.nombre} — stock actual: {p.stockActual}
                   </li>
                 ))}
                 {alertas.length > 3 && (
@@ -277,7 +279,7 @@ function VistaTabla({ productos, onEditar, onEliminar, stockBadge }) {
           </thead>
           <tbody className="divide-y divide-gray-100">
             {productos.map((p) => (
-              <tr key={p.idproducto} className="hover:bg-gray-50 transition group">
+              <tr key={p.idProducto} className="hover:bg-gray-50 transition group">
                 <td className="px-6 py-4">
                   <div>
                     <p className="font-semibold text-gray-900 group-hover:text-primary-600 transition">{p.nombre}</p>
@@ -293,10 +295,10 @@ function VistaTabla({ productos, onEditar, onEliminar, stockBadge }) {
                   <span className="font-bold text-gray-900">${parseFloat(p.precio).toFixed(2)}</span>
                 </td>
                 <td className="px-6 py-4 text-center">
-                  <span className="font-bold text-gray-900 text-base">{p.stockactual}</span>
+                  <span className="font-bold text-gray-900 text-base">{p.stockActual}</span>
                 </td>
                 <td className="px-6 py-4 text-center">
-                  <span className="text-gray-500">{p.stockminimo}</span>
+                  <span className="text-gray-500">{p.stockMinimo}</span>
                 </td>
                 <td className="px-6 py-4 text-center">{stockBadge(p)}</td>
                 <td className="px-6 py-4">
@@ -332,7 +334,7 @@ function VistaTarjetas({ productos, onEditar, onEliminar, stockBadge }) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {productos.map((p) => (
-        <div key={p.idproducto} className="card-interactive group">
+        <div key={p.idProducto} className="card-interactive group">
           <div className="flex items-start justify-between mb-4">
             <div className="flex-1 min-w-0">
               <h3 className="font-bold text-gray-900 text-lg truncate group-hover:text-primary-600 transition">{p.nombre}</h3>
@@ -354,7 +356,7 @@ function VistaTarjetas({ productos, onEditar, onEliminar, stockBadge }) {
             </div>
             <div className="bg-gradient-to-br from-blue-50 to-blue-100/50 rounded-xl p-3 border border-blue-100">
               <p className="text-xs text-blue-600 font-semibold mb-1">Stock</p>
-              <p className="font-bold text-gray-900 text-lg">{p.stockactual} <span className="text-sm text-gray-500">/ {p.stockminimo}</span></p>
+              <p className="font-bold text-gray-900 text-lg">{p.stockActual} <span className="text-sm text-gray-500">/ {p.stockMinimo}</span></p>
             </div>
           </div>
 
@@ -387,8 +389,8 @@ function FormularioProducto({ producto, onClose, onGuardado, toast }) {
   const [descripcion, setDescripcion] = useState(producto?.descripcion || '');
   const [precio, setPrecio] = useState(producto?.precio || '');
   const [tipo, setTipo] = useState(producto?.tipo || '');
-  const [stockActual, setStockActual] = useState(producto?.stockactual || 0);
-  const [stockMinimo, setStockMinimo] = useState(producto?.stockminimo || 5);
+  const [stockActual, setStockActual] = useState(producto?.stockActual ?? 0);
+  const [stockMinimo, setStockMinimo] = useState(producto?.stockMinimo ?? 5);
   const [error, setError] = useState('');
   const [enviando, setEnviando] = useState(false);
 
@@ -407,12 +409,12 @@ function FormularioProducto({ producto, onClose, onGuardado, toast }) {
         descripcion,
         precio: parseFloat(precio),
         tipo,
-        stockactual: parseInt(stockActual),
-        stockminimo: parseInt(stockMinimo),
+        stockActual: parseInt(stockActual),
+        stockMinimo: parseInt(stockMinimo),
       };
 
       if (producto) {
-        await api.put(`/productos/${producto.idproducto}`, datos);
+        await api.put(`/productos/${producto.idProducto}`, datos);
         toast.success(`Producto "${nombre}" actualizado`);
       } else {
         await api.post('/productos', datos);
