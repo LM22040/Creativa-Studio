@@ -5,10 +5,11 @@ yarn-debug.log*
 yarn-error.log*
 package-lock.json
 
-# Variables de entorno (IMPORTANTE: nunca subir al repositorio)
+# Variables de entorno (compartido en backend/.env para el equipo)
 .env
 .env.local
 .env.production
+!backend/.env
 
 # Archivos de build
 dist/
@@ -56,4 +57,4 @@ RESUMEN_*.md
 SUGERENCIAS_*.md
 
 # Carpetas temporales o mal nombradas
-{frontend/
+
