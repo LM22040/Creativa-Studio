@@ -2,7 +2,7 @@
 // Script para actualizar el hash del usuario admin a la contraseña correcta
 
 const db = require('../models/db');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 
 const PASSWORD_CORRECTA = 'admin123';
 const HASH_CORRECTO = '$2b$10$QMRvbNVqbxmpNndB.cpNReTpgmcCHNq9kdnVbwBgbbW73hr6bkIy.';

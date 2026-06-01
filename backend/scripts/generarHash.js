@@ -1,7 +1,7 @@
 // backend/scripts/generarHash.js
 // Script para generar hash de contraseñas para usuarios
 
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 
 // Obtener la contraseña desde argumentos de línea de comandos
 const password = process.argv[2];
